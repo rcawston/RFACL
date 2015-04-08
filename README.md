@@ -1,7 +1,7 @@
 # RFACL
 XML configurable Windows ACL Utility
 
-Usage: rfacl.exe [/q] [/qq] [/v] <acl spec file> <path>
+Usage: rfacl.exe [/q] [/qq] [/v] (acl spec file) (path)
 
        /q   =  quiet mode (suppresses 'Press any key to exit' prompts)
        /qq  =  super quiet mode (no console output)
