@@ -26,13 +26,13 @@ namespace RFACL
 {
     class ACLTool
     {
-        public static void ApplyACLs(Specs.FolderSpec[] folderSpecs, string path, bool verbose = false)
+        public static void ApplyACLs(Specs.ConfigSpec configSpec, string path, bool verbose = false)
         {
             foreach (String dir in DirSearch(path))
             {
                 string searchPath = dir.Replace(path, "");
                 // find the first FolderSpec that matches
-                foreach (Specs.FolderSpec folderSpec in folderSpecs)
+                foreach (Specs.FolderSpec folderSpec in configSpec.FolderSpecs)
                 {
                     if (folderSpec.Path.Contains("*") || folderSpec.Path.Contains("?"))
                     {

@@ -25,7 +25,7 @@ namespace RFACL
 {
     class ConfigLoader
     {
-        public static Specs.FolderSpec[] LoadConfig(String configPath)
+        public static Specs.ConfigSpec LoadConfig(String configPath)
         {
             List<Specs.PermissionSpec> permissionSpecs = new List<Specs.PermissionSpec>();
             List<Specs.UserGroupSpec> userGroupSpecs = new List<Specs.UserGroupSpec>();
@@ -325,10 +325,10 @@ namespace RFACL
                             switch (reader.Value)
                             {
                                 case "Allow":
-                                    currUserGroupSpec.AccessControlType |= AccessControlType.Allow;
+                                    currUserGroupSpec.AccessControlType = AccessControlType.Allow;
                                     break;
                                 case "Deny":
-                                    currUserGroupSpec.AccessControlType |= AccessControlType.Deny;
+                                    currUserGroupSpec.AccessControlType = AccessControlType.Deny;
                                     break;
                             }
                         }
@@ -339,19 +339,14 @@ namespace RFACL
                         else if (inPermission)
                         {
                             bool found = false;
-                            foreach (Specs.PermissionSpec spec in permissionSpecs)
+                            foreach (Specs.PermissionSpec spec in permissionSpecs.Where(spec => spec.Name == reader.Value))
                             {
-                                if (spec.Name == reader.Value)
-                                {
-                                    currFolderSpec.Permission = spec;
-                                    found = true;
-                                    break;
-                                }
+                                currFolderSpec.Permission = spec;
+                                found = true;
+                                break;
                             }
                             if (!found)
-                            {
                                 throw new Exception("XML Parse Error: PermissionSpec named '" + reader.Value + "' was not found!");
-                            }
                         }
                         else if (inStarDepth)
                         {
@@ -463,7 +458,8 @@ namespace RFACL
                         break;
                 }
             }
-            return folderSpecs.ToArray();
+            Specs.ConfigSpec configSpec = new Specs.ConfigSpec {FolderSpecs = folderSpecs.ToArray()};
+            return configSpec;
         }
     }
 }

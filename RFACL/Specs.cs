@@ -65,5 +65,10 @@ namespace RFACL
                 return "[Folder] " + Path + "\n" + Permission;
             }
         }
+
+        public class ConfigSpec
+        {
+            public FolderSpec[] FolderSpecs;
+        }
     }
 }
