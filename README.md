@@ -7,10 +7,12 @@ Usage: rfacl.exe [/q] [/qq] [/v] <acl spec file> <path>
        /qq  =  super quiet mode (no console output)
        /v   =  verbose mode
 
-e.g.: rfacl.exe acl.xml c:\path
+e.g.
 
+    : rfacl.exe acl.xml c:\path
     : rfacl.exe c:\path\to\config\acl.xml c:\path
     : rfacl.exe /qq c:\path\to\config\acl.xml c:\path
     : rfacl.exe /v c:\path\to\config\acl.xml c:\path
-    
+
+# XML Config
 See RFACL\ExampleConfig.xml for example
