@@ -17,6 +17,7 @@ License along with this library.
 */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -28,7 +29,7 @@ namespace RFACL
     {
         public static void ApplyACLs(Specs.ConfigSpec configSpec, string path, bool verbose = false)
         {
-            foreach (String dir in DirSearch(path))
+            foreach (String dir in DirSearch(path, configSpec.RecursionSpec.MaxScanDepth))
             {
                 string searchPath = dir.Replace(path, "");
                 // find the first FolderSpec that matches
@@ -46,8 +47,10 @@ namespace RFACL
                             int folderSpecMax = folderSpec.Path.Count(f => f == '\\') + folderSpec.StarDepth - 1;
                             if (searchPathCount > folderSpecMax) continue;
                         }
+                        var watch = Stopwatch.StartNew();
+
                         if (verbose)
-                            Console.WriteLine("Found match for " + dir + ": " + folderSpec.Path + ". Applying ACL...");
+                            Console.WriteLine("Found match for " + dir + ": " + folderSpec.Path + ".  Applying ACL...");
                         try
                         {
                             ApplyACL(folderSpec, dir);
@@ -57,6 +60,8 @@ namespace RFACL
                             Console.WriteLine("Error Applying ACL: " + dir + " could not be modified. " +
                                               e.Message);
                         }
+                        if (verbose)
+                            Console.WriteLine("Applying ACL took: " + watch.ElapsedMilliseconds + "ms");
                         break;
                     }
                     if (!folderSpec.Path.Contains(searchPath)) continue;
@@ -102,14 +107,14 @@ namespace RFACL
         }
 
 
-        private static string[] DirSearch(string sDir)
+        private static string[] DirSearch(string sDir, int maxScanDepth)
         {
             List<String> dirsFound = new List<string> {sDir + @"\"};
-            dirsFound.AddRange(DirSearchWorker(sDir));
+            dirsFound.AddRange(DirSearchWorker(sDir, 0, maxScanDepth));
             return dirsFound.ToArray();
         }
 
-        private static string[] DirSearchWorker(string sDir)
+        private static string[] DirSearchWorker(string sDir, int currDepth, int maxScanDepth)
         {
             List<String> dirsFound = new List<string>();
             try
@@ -117,7 +122,8 @@ namespace RFACL
                 foreach (string d in Directory.GetDirectories(sDir))
                 {
                     dirsFound.Add(d);
-                    dirsFound.AddRange(DirSearch(d));
+                    if (maxScanDepth == -1 || currDepth < maxScanDepth)
+                        dirsFound.AddRange(DirSearchWorker(d, currDepth++, maxScanDepth));
                 }
             }
             catch

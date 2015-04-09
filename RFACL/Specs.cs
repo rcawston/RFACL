@@ -66,9 +66,15 @@ namespace RFACL
             }
         }
 
+        public class RecursionSpec
+        {
+            public int MaxScanDepth = -1;
+        }
+
         public class ConfigSpec
         {
             public FolderSpec[] FolderSpecs;
+            public RecursionSpec RecursionSpec;
         }
     }
 }

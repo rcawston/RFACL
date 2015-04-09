@@ -46,6 +46,7 @@ namespace RFACL
             bool superquiet = false; /* suppress all console output - also implies quiet */
             bool quiet = false; /* suppress Press any key to exit prompts */
             bool verbose = false; /* be very verbose */
+            bool superverbose = false; /* be very VERY verbose */
 
             // Parse arguments for flags
             foreach (string arg in args)
@@ -56,6 +57,8 @@ namespace RFACL
                     superquiet = true;
                 if (arg.ToLower() == "/v")
                     verbose = true;
+                if (arg.ToLower() == "/vv")
+                    superverbose = true;
             }
 
             // Parse arguments for XML config and Path
@@ -98,7 +101,7 @@ namespace RFACL
             }
 
             // In verbose mode, display all rules from the XML configuration
-            if (verbose)
+            if (superverbose)
             {
                 Console.WriteLine("Done loading XML configuration.");
                 foreach (Specs.FolderSpec folderSpec in configSpec.FolderSpecs)
@@ -106,6 +109,8 @@ namespace RFACL
                     Console.WriteLine(folderSpec.ToString());
                     Console.WriteLine("");
                 }
+            }
+            if (verbose) {
                 Console.WriteLine("Time to Load/Parse XML: " + watch.ElapsedMilliseconds + "ms");
             }
 
@@ -131,6 +136,7 @@ namespace RFACL
             Console.WriteLine("       /q   =  quiet mode (suppresses 'Press any key to exit' prompts)");
             Console.WriteLine("       /qq  =  super quiet mode (no console output)");
             Console.WriteLine("       /v   =  verbose mode");
+            Console.WriteLine("       /vv   =  very verbose mode");
             Console.WriteLine("");
             Console.WriteLine(@"e.g.: rfacl.exe acl.xml c:\path");
             Console.WriteLine(@"    : rfacl.exe c:\path\to\config\acl.xml c:\path");

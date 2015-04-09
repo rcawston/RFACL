@@ -41,6 +41,7 @@ namespace RFACL
             bool inFolderSpecs = false;
             bool inFolder = false;
             /* text elements */
+            bool inMaxScanDepth = false;
             bool inName = false;
             /* text elements in PermissionSpec */
             bool inProtectFromInheritance = false;
@@ -56,6 +57,7 @@ namespace RFACL
             bool inPermission = false;
             bool inStarDepth = false;
 
+            Specs.ConfigSpec configSpec = new Specs.ConfigSpec();
             Specs.FolderSpec currFolderSpec = null;
             Specs.PermissionSpec currPermissionSpec = null;
             Specs.UserGroupSpec currUserGroupSpec = null;
@@ -86,6 +88,11 @@ namespace RFACL
                                     throw new Exception(@"XML Parse Error: UserGroup element detected outside of RFACL_spec\PermissionsSpecs\PermissionSpec.");
                                 inUserGroup = true;
                                 currUserGroupSpec = new Specs.UserGroupSpec();
+                                break;
+                            case "MaxScanDepth":
+                                if (!inRoot)
+                                    throw new Exception(@"XML Parse Error: MaxScanDepth element detected outside of RFACL_spec.");
+                                inMaxScanDepth = true;
                                 break;
                             case "Name":
                                 if (!inRoot || !inPermissionsSpecs || !inPermissionsSpec)
@@ -164,6 +171,14 @@ namespace RFACL
                                 currUserGroupSpec.Name = reader.Value;
                             else
                                 currPermissionSpec.Name = reader.Value;
+                        }
+                        else if (inMaxScanDepth)
+                        {   
+                            if (reader.Value != "-1" && !reader.Value.All(Char.IsDigit))
+                            {
+                                throw new Exception("XML Parse Error: MaxScanDepth must be -1 or a positive integer ('" + reader.Value + "' specified)");
+                            }
+                            configSpec.RecursionSpec.MaxScanDepth = Int32.Parse(reader.Value);
                         }
                         else if (inProtectFromInheritance)
                         {
@@ -391,6 +406,11 @@ namespace RFACL
                                     throw new Exception(@"XML Parse Error: Name end element detected but was not expected.");
                                 inName = false;
                                 break;
+                            case "MaxScanDepth":
+                                if (!inMaxScanDepth)
+                                    throw new Exception(@"XML Parse Error: MaxScanDepth end element detected but was not expected.");
+                                inMaxScanDepth = false;
+                                break;
                             case "ProtectFromInheritance":
                                 if (!inProtectFromInheritance)
                                     throw new Exception(@"XML Parse Error: ProtectFromInheritance end element detected but was not expected.");
@@ -458,7 +478,7 @@ namespace RFACL
                         break;
                 }
             }
-            Specs.ConfigSpec configSpec = new Specs.ConfigSpec {FolderSpecs = folderSpecs.ToArray()};
+            configSpec.FolderSpecs = folderSpecs.ToArray();
             return configSpec;
         }
     }
