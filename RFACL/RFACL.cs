@@ -79,10 +79,10 @@ namespace RFACL
             }
 
             // Load and Parse the XML Config
-            Specs.ConfigSpec ConfigSpec = null;
+            Specs.ConfigSpec configSpec;
             try
             {
-                ConfigSpec = ConfigLoader.LoadConfig(config);
+                configSpec = ConfigLoader.LoadConfig(config);
             }
             catch (Exception e)
             {
@@ -101,16 +101,16 @@ namespace RFACL
             if (verbose)
             {
                 Console.WriteLine("Done loading XML configuration.");
-                foreach (Specs.FolderSpec FolderSpec in ConfigSpec.FolderSpecs)
+                foreach (Specs.FolderSpec folderSpec in configSpec.FolderSpecs)
                 {
-                    Console.WriteLine(FolderSpec.ToString());
+                    Console.WriteLine(folderSpec.ToString());
                     Console.WriteLine("");
                 }
                 Console.WriteLine("Time to Load/Parse XML: " + watch.ElapsedMilliseconds + "ms");
             }
 
             // Actually apply the ACLs
-            ACLTool.ApplyACLs(ConfigSpec, path, verbose);
+            ACLTool.ApplyACLs(configSpec, path, verbose);
 
             if (!superquiet)
             {

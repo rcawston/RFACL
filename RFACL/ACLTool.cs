@@ -77,13 +77,12 @@ namespace RFACL
 
         private static void ApplyACL(Specs.FolderSpec folderSpec, string path)
         {
-            
             DirectoryInfo dInfo = new DirectoryInfo(path);
             DirectorySecurity dSecurity = dInfo.GetAccessControl();
 
             if (folderSpec.Permission.CleanExplicit)
             {
-                AuthorizationRuleCollection rules = null;
+                AuthorizationRuleCollection rules;
                 if (folderSpec.Permission.PreserveInherited)
                     rules = dSecurity.GetAccessRules(true, false, typeof(System.Security.Principal.NTAccount));
                 else
@@ -105,8 +104,7 @@ namespace RFACL
 
         private static string[] DirSearch(string sDir)
         {
-            List<String> dirsFound = new List<string>();
-            dirsFound.Add(sDir + @"\");
+            List<String> dirsFound = new List<string> {sDir + @"\"};
             dirsFound.AddRange(DirSearchWorker(sDir));
             return dirsFound.ToArray();
         }
