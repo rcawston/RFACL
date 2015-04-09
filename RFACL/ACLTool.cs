@@ -87,11 +87,7 @@ namespace RFACL
 
             if (folderSpec.Permission.CleanExplicit)
             {
-                AuthorizationRuleCollection rules;
-                if (folderSpec.Permission.PreserveInherited)
-                    rules = dSecurity.GetAccessRules(true, false, typeof(System.Security.Principal.NTAccount));
-                else
-                    rules = dSecurity.GetAccessRules(true, true, typeof(System.Security.Principal.NTAccount));
+                AuthorizationRuleCollection rules = dSecurity.GetAccessRules(true, !folderSpec.Permission.PreserveInherited, typeof(System.Security.Principal.NTAccount));
                 foreach (FileSystemAccessRule rule in rules)
                     dSecurity.RemoveAccessRule(rule);
             }
