@@ -30,6 +30,7 @@ namespace RFACL
             List<Specs.PermissionSpec> permissionSpecs = new List<Specs.PermissionSpec>();
             List<Specs.UserGroupSpec> userGroupSpecs = new List<Specs.UserGroupSpec>();
             List<Specs.FolderSpec> folderSpecs = new List<Specs.FolderSpec>();
+            Specs.RecursionSpec recursionSpec = new Specs.RecursionSpec();
 
             XmlTextReader reader = new XmlTextReader(configPath);
 
@@ -57,7 +58,6 @@ namespace RFACL
             bool inPermission = false;
             bool inStarDepth = false;
 
-            Specs.ConfigSpec configSpec = new Specs.ConfigSpec();
             Specs.FolderSpec currFolderSpec = null;
             Specs.PermissionSpec currPermissionSpec = null;
             Specs.UserGroupSpec currUserGroupSpec = null;
@@ -178,7 +178,7 @@ namespace RFACL
                             {
                                 throw new Exception("XML Parse Error: MaxScanDepth must be -1 or a positive integer ('" + reader.Value + "' specified)");
                             }
-                            configSpec.RecursionSpec.MaxScanDepth = Int32.Parse(reader.Value);
+                            recursionSpec.MaxScanDepth = Int32.Parse(reader.Value);
                         }
                         else if (inProtectFromInheritance)
                         {
@@ -478,7 +478,12 @@ namespace RFACL
                         break;
                 }
             }
-            configSpec.FolderSpecs = folderSpecs.ToArray();
+
+            Specs.ConfigSpec configSpec = new Specs.ConfigSpec
+            {
+                RecursionSpec = recursionSpec,
+                FolderSpecs = folderSpecs.ToArray()
+            };
             return configSpec;
         }
     }
