@@ -140,7 +140,11 @@ namespace RFACL
             // add user groups from the spec
             foreach (var userGroup in permissionSpec.UserGroups)
             {
-                dSecurity.AddAccessRule(new FileSystemAccessRule(userGroup.Name, userGroup.FileSystemRight, userGroup.InheritanceFlag, userGroup.PropagationFlag, userGroup.AccessControlType));
+                // add the access rule
+                dSecurity.AddAccessRule(new FileSystemAccessRule(userGroup.Name,
+                    userGroup.FileSystemRight, userGroup.GetInheritanceFlags(),
+                    userGroup.GetPropagationFlags(), userGroup.AccessControlType)
+                );
             }
 
             // set the access rule protections from the spec

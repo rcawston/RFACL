@@ -133,17 +133,38 @@ namespace RFACL
         /// <summary>
         /// access rights to use when creating the access control entry
         /// </summary>
+        //[XmlElement("FileSystemRight")]
         public FileSystemRights FileSystemRight;
 
         /// <summary>
         /// the semantics of inheritance for this access control entry
         /// </summary>
-        public InheritanceFlags InheritanceFlag;
+        [XmlElement("InheritanceFlag")]
+        public InheritanceFlags[] InheritanceFlags;
+
+        /// <summary>
+        /// Get the bitwise OR merged inheritance flags
+        /// </summary>
+        /// <returns>inheritance flags</returns>
+        public InheritanceFlags GetInheritanceFlags()
+        {
+            return InheritanceFlags.Aggregate(new InheritanceFlags(), (current, iFlag) => current | iFlag);
+        }
 
         /// <summary>
         /// specifies how the access control entry is propagated to child objects
         /// </summary>
-        public PropagationFlags PropagationFlag;
+        [XmlElement("PropagationFlag")]
+        public PropagationFlags[] PropagationFlags;
+        
+        /// <summary>
+        /// Get the bitwise OR merged propagation flags
+        /// </summary>
+        /// <returns>inheritance flags</returns>
+        public PropagationFlags GetPropagationFlags()
+        {
+            return PropagationFlags.Aggregate(new PropagationFlags(), (current, pFlag) => current | pFlag);
+        }
 
         /// <summary>
         /// Specifies whether the access control entry is used to allow or deny access
