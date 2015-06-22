@@ -43,13 +43,13 @@ namespace RFACL
             }
 
             // Flags for CLI arguments
-            bool superquiet = false; /* suppress all console output - also implies quiet */
-            bool quiet = false; /* suppress Press any key to exit prompts */
-            bool verbose = false; /* be very verbose */
-            bool superverbose = false; /* be very VERY verbose */
+            var superquiet = false; /* suppress all console output - also implies quiet */
+            var quiet = false; /* suppress Press any key to exit prompts */
+            var verbose = false; /* be very verbose */
+            var superverbose = false; /* be very VERY verbose */
 
             // Parse arguments for flags
-            foreach (string arg in args)
+            foreach (var arg in args)
             {
                 if (arg.ToLower() == "/q")
                     quiet = true;
@@ -62,8 +62,8 @@ namespace RFACL
             }
 
             // Parse arguments for XML config and Path
-            string config = args[args.Count() - 2];
-            string path = args[args.Count() - 1];
+            var config = args[args.Count() - 2];
+            var path = args[args.Count() - 1];
 
             // Fail out if the argument specified path does not exist
             if (!Directory.Exists(path))
@@ -82,7 +82,7 @@ namespace RFACL
             }
 
             // Load and Parse the XML Config
-            Specs.ConfigSpec configSpec;
+            RFACLConfig configSpec;
             try
             {
                 configSpec = ConfigLoader.LoadConfig(config);
@@ -104,7 +104,7 @@ namespace RFACL
             if (superverbose)
             {
                 Console.WriteLine("Done loading XML configuration.");
-                foreach (Specs.FolderSpec folderSpec in configSpec.FolderSpecs)
+                foreach (var folderSpec in configSpec.Folders)
                 {
                     Console.WriteLine(folderSpec.ToString());
                     Console.WriteLine("");

@@ -27,33 +27,35 @@ namespace RFACL
 {
     class ACLTool
     {
-        public static void ApplyACLs(Specs.ConfigSpec configSpec, string path, bool verbose = false)
+        public static void ApplyACLs(RFACLConfig configSpec, string path, bool verbose = false)
         {
-            foreach (String dir in DirSearch(path, configSpec.RecursionSpec.MaxScanDepth))
+            foreach (var dir in DirSearch(path, configSpec.MaxScanDepth))
             {
-                string searchPath = dir.Replace(path, "");
+                var searchPath = dir.Replace(path, "");
                 // find the first FolderSpec that matches
-                foreach (Specs.FolderSpec folderSpec in configSpec.FolderSpecs)
+                var watch = Stopwatch.StartNew();
+                foreach (var folderSpec in configSpec.Folders)
                 {
                     if (folderSpec.Path.Contains("*") || folderSpec.Path.Contains("?"))
                     {
-                        Regex r =
+                        var r =
                             new Regex("^" + Regex.Escape(folderSpec.Path).Replace(@"\*", ".*").Replace(@"\?", ".") + "$",
                                 RegexOptions.IgnoreCase);
                         if (!r.IsMatch(searchPath)) continue;
                         if (folderSpec.StarDepth > 0)
                         {
-                            int searchPathCount = searchPath.Count(f => f == '\\');
-                            int folderSpecMax = folderSpec.Path.Count(f => f == '\\') + folderSpec.StarDepth - 1;
+                            var searchPathCount = searchPath.Count(f => f == '\\');
+                            var folderSpecMax = folderSpec.Path.Count(f => f == '\\') + folderSpec.StarDepth - 1;
                             if (searchPathCount > folderSpecMax) continue;
                         }
-                        var watch = Stopwatch.StartNew();
+
+                        var curPermission = configSpec.Permissions.FirstOrDefault(permission => folderSpec.Permission == permission.Name);
 
                         if (verbose)
                             Console.WriteLine("Found match for " + dir + ": " + folderSpec.Path + ".  Applying ACL...");
                         try
                         {
-                            ApplyACL(folderSpec, dir);
+                            ApplyACL(folderSpec, curPermission, dir);
                         }
                         catch (Exception e)
                         {
@@ -64,58 +66,64 @@ namespace RFACL
                             Console.WriteLine("Applying ACL took: " + watch.ElapsedMilliseconds + "ms");
                         break;
                     }
+
                     if (!folderSpec.Path.Contains(searchPath)) continue;
+
+                    var curPermissions = configSpec.Permissions.FirstOrDefault(permission => folderSpec.Permission == permission.Name);
+
                     if (verbose)
                         Console.WriteLine("Found match for " + dir + ": " + folderSpec.Path + ". Applying ACL...");
                     try
                     {
-                        ApplyACL(folderSpec, dir);
+                        ApplyACL(folderSpec, curPermissions, dir);
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine("Error Applying ACL: " + dir + " could not be modified, because " + e.Message);
                     }
+                    if (verbose)
+                        Console.WriteLine("Applying ACL took: " + watch.ElapsedMilliseconds + "ms");
                     break;
                 }
             }
         }
 
-        private static void ApplyACL(Specs.FolderSpec folderSpec, string path)
+        private static void ApplyACL(Folder folderSpec, Permission permissionSpec, string path)
         {
-            DirectoryInfo dInfo = new DirectoryInfo(path);
-            DirectorySecurity dSecurity = dInfo.GetAccessControl();
+            var dInfo = new DirectoryInfo(path);
+            var dSecurity = dInfo.GetAccessControl();
 
-            if (folderSpec.Permission.CleanExplicit)
+            if (permissionSpec.CleanExplicit)
             {
-                AuthorizationRuleCollection rules = dSecurity.GetAccessRules(true, !folderSpec.Permission.PreserveInherited, typeof(System.Security.Principal.NTAccount));
+                var rules = dSecurity.GetAccessRules(true, !permissionSpec.PreserveInherited, typeof(System.Security.Principal.NTAccount));
                 foreach (FileSystemAccessRule rule in rules)
                     dSecurity.RemoveAccessRule(rule);
             }
 
-            foreach (Specs.UserGroupSpec userGroup in folderSpec.Permission.UserGroups)
+            foreach (var userGroup in permissionSpec.UserGroups)
             {
                 dSecurity.AddAccessRule(new FileSystemAccessRule(userGroup.Name, userGroup.FileSystemRight, userGroup.InheritanceFlag, userGroup.PropagationFlag, userGroup.AccessControlType));
             }
 
-            dSecurity.SetAccessRuleProtection(folderSpec.Permission.ProtectFromInheritance, folderSpec.Permission.PreserveInherited);
+            dSecurity.SetAccessRuleProtection(permissionSpec.ProtectFromInheritance, permissionSpec.PreserveInherited);
 
             dInfo.SetAccessControl(dSecurity);
         }
 
 
-        private static string[] DirSearch(string sDir, int maxScanDepth)
+        private static IEnumerable<string> DirSearch(string sDir, int maxScanDepth)
         {
-            List<String> dirsFound = new List<string> {sDir + @"\"};
+            var dirsFound = new List<string> {sDir + @"\"};
             dirsFound.AddRange(DirSearchWorker(sDir, 0, maxScanDepth));
             return dirsFound.ToArray();
         }
 
-        private static string[] DirSearchWorker(string sDir, int currDepth, int maxScanDepth)
+        private static IEnumerable<string> DirSearchWorker(string sDir, int currDepth, int maxScanDepth)
         {
-            List<String> dirsFound = new List<string>();
+            var dirsFound = new List<string>();
             try
             {
-                foreach (string d in Directory.GetDirectories(sDir))
+                foreach (var d in Directory.GetDirectories(sDir))
                 {
                     dirsFound.Add(d);
                     if (maxScanDepth == -1 || currDepth < maxScanDepth)
