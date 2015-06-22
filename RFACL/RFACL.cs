@@ -1,6 +1,6 @@
 ﻿/*
 RFACL
-Copyright (c) Ross Cawston, All rights reserved.
+Copyright © 2015 Ross Cawston; All rights reserved.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -21,13 +21,15 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-/**
- * Ross' Fast ACL Utility
- */
 namespace RFACL
 {
     class RFACL
     {
+        /// <summary>
+        /// RFACL Main Program
+        /// </summary>
+        /// <param name="args">command line arguments</param>
+        /// <returns>errorlevel</returns>
         static int Main(string[] args)
         {
             // Start a stopwatch to track runtime
@@ -128,6 +130,9 @@ namespace RFACL
             return 0;
         }
 
+        /// <summary>
+        /// Show usage information
+        /// </summary>
         public static void ShowUsage()
         {
             Console.WriteLine("RFACL v" + GetProductVersion());
@@ -145,6 +150,10 @@ namespace RFACL
             Console.WriteLine("");
         }
 
+        /// <summary>
+        /// Gets the executing assembly's version number.
+        /// </summary>
+        /// <returns></returns>
         public static string GetProductVersion()
         {
             return Assembly.GetExecutingAssembly().GetName().Version.ToString();
